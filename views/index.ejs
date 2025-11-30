@@ -5,34 +5,6 @@
     <p class="text-gray-400">Paste your Wordle share text to calculate your score</p>
   </div>
 
-  <!-- Scoring System Info -->
-  <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6 border border-gray-700">
-    <h2 class="text-xl font-bold text-orange-500 mb-4">Scoring System (Higher is Better)</h2>
-    <div class="grid md:grid-cols-2 gap-4 text-gray-300">
-      <div>
-        <h3 class="font-semibold text-gray-200 mb-2">Box Points (add to score):</h3>
-        <ul class="space-y-1 text-sm">
-          <li>⬛ Black box: <span class="text-red-400 font-semibold">+2 points</span> (bad)</li>
-          <li>🟨 Yellow box: <span class="text-yellow-400 font-semibold">+1 point</span> (ok)</li>
-          <li>🟩 Green box: <span class="text-green-400 font-semibold">+0 points</span> (good)</li>
-        </ul>
-        <p class="text-xs text-gray-400 mt-2">Perfect score = 100 (all green on first guess)</p>
-        <p class="text-xs text-gray-400 mt-1">Final score = |100 - raw score| (failure = 0)</p>
-      </div>
-      <div>
-        <h3 class="font-semibold text-gray-200 mb-2">Per-Guess Penalty (adds to score):</h3>
-        <ul class="space-y-1 text-sm">
-          <li>Guess 1: <span class="text-green-400 font-semibold">+0 penalty</span></li>
-          <li>Guess 2: <span class="text-orange-400 font-semibold">+2 penalty</span></li>
-          <li>Guess 3: <span class="text-orange-400 font-semibold">+4 penalty</span></li>
-          <li>Guess 4+: <span class="text-orange-400 font-semibold">+(guess - 1) × 2</span></li>
-        </ul>
-        <p class="text-xs text-gray-400 mt-2">Penalties add to your score (making it worse)</p>
-        <p class="text-xs text-red-400 mt-1 font-semibold">Failure penalty: +10 points if not completed</p>
-      </div>
-    </div>
-  </div>
-
   <!-- Input Form -->
   <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
     <form method="POST" action="/score" id="wordleForm">
@@ -204,6 +176,36 @@
       </div>
     </div>
   <% } %>
+
+  <!-- Scoring System Info -->
+  <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6 border border-gray-700">
+    <h2 class="text-xl font-bold text-orange-500 mb-4">Scoring System (Higher is Better)</h2>
+    <div class="grid md:grid-cols-2 gap-4 text-gray-300">
+      <div>
+        <h3 class="font-semibold text-gray-200 mb-2">Box Points (add to score):</h3>
+        <ul class="space-y-1 text-sm">
+          <li>⬛ Black box: <span class="text-red-400 font-semibold">-2 points</span> (bad)</li>
+          <li>🟨 Yellow box: <span class="text-yellow-400 font-semibold">-1 point</span> (ok)</li>
+          <li>🟩 Green box: <span class="text-green-400 font-semibold">+0 points</span> (good)</li>
+        </ul>
+        <p class="text-xs text-gray-400 mt-2">Perfect score = 100 (all green on first guess)</p>
+        <p class="text-xs text-gray-400 mt-1">Final score = |100 - raw score| (failure = 0)</p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-200 mb-2">Per-Guess Penalty (adds to score):</h3>
+        <ul class="space-y-1 text-sm">
+          <li>Guess 1: <span class="text-green-400 font-semibold">0 penalty</span></li>
+          <li>Guess 2: <span class="text-orange-400 font-semibold">-2 penalty</span></li>
+          <li>Guess 3: <span class="text-orange-400 font-semibold">-4 penalty</span></li>
+          <li>Guess 4: <span class="text-orange-400 font-semibold">-6 penalty</span></li>
+          <li>Guess 4: <span class="text-orange-400 font-semibold">-8 penalty</span></li>
+          <li>Guess 4: <span class="text-orange-400 font-semibold">-10 penalty</span></li>
+        </ul>
+        <p class="text-xs text-gray-400 mt-2">Penalties add to your score (making it worse)</p>
+        <p class="text-xs text-red-400 mt-1 font-semibold">Failure penalty: +10 points if not completed</p>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
