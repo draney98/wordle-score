@@ -175,21 +175,10 @@
         ✓ Copied to clipboard!
       </div>
     </div>
-
-    <!-- New Score Button -->
-    <div class="mt-6">
-      <button
-        id="newScoreButton"
-        class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-        onclick="showNewScoreForm()"
-      >
-        Score a New Wordle
-      </button>
-    </div>
   <% } %>
 
   <!-- Scoring System Info -->
-  <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6 border border-gray-700">
+  <div id="scoringSystemSection" class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6 border border-gray-700" style="display: none;">
     <h2 class="text-xl font-bold text-orange-500 mb-4">Scoring System (Higher is Better)</h2>
     <div class="grid md:grid-cols-2 gap-4 text-gray-300">
       <div>
@@ -217,6 +206,17 @@
       </div>
     </div>
   </div>
+
+  <!-- New Score Button -->
+  <div id="newScoreButtonSection" class="mb-6" style="display: none;">
+    <button
+      id="newScoreButton"
+      class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+      onclick="showNewScoreForm()"
+    >
+      Score a New Wordle
+    </button>
+  </div>
 </div>
 
 <script>
@@ -243,6 +243,8 @@
   function showNewScoreForm() {
     const inputFormSection = document.getElementById('inputFormSection');
     const resultsSection = document.getElementById('resultsSection');
+    const scoringSystemSection = document.getElementById('scoringSystemSection');
+    const newScoreButtonSection = document.getElementById('newScoreButtonSection');
     const wordleTextarea = document.getElementById('wordleText');
     
     // Show the input form
@@ -253,6 +255,16 @@
     // Hide the results section
     if (resultsSection) {
       resultsSection.style.display = 'none';
+    }
+    
+    // Hide the scoring system section
+    if (scoringSystemSection) {
+      scoringSystemSection.style.display = 'none';
+    }
+    
+    // Hide the new score button
+    if (newScoreButtonSection) {
+      newScoreButtonSection.style.display = 'none';
     }
     
     // Clear the textarea
@@ -271,11 +283,22 @@
 
   // Generate sample Wordle result
   document.addEventListener('DOMContentLoaded', function() {
-    // Hide input form if results are shown
+    // Hide input form and show scoring system/new score button if results are shown
     <% if (typeof result !== 'undefined' && result) { %>
       const inputFormSection = document.getElementById('inputFormSection');
+      const scoringSystemSection = document.getElementById('scoringSystemSection');
+      const newScoreButtonSection = document.getElementById('newScoreButtonSection');
+      
       if (inputFormSection) {
         inputFormSection.style.display = 'none';
+      }
+      
+      if (scoringSystemSection) {
+        scoringSystemSection.style.display = 'block';
+      }
+      
+      if (newScoreButtonSection) {
+        newScoreButtonSection.style.display = 'block';
       }
     <% } %>
     
