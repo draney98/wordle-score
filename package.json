@@ -4,12 +4,11 @@
   "description": "Wordle Score Calculator - Calculate scores from Wordle share text",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc && echo 'Build completed successfully'",
+    "build": "tsc",
     "start": "node dist/server.js",
     "dev": "nodemon",
     "watch:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch",
-    "test": "echo \"Error: no test runner configured\" && exit 1",
-    "postbuild": "ls -la dist/ || echo 'Warning: dist directory not found'"
+    "test": "echo \"Error: no test runner configured\" && exit 1"
   },
   "keywords": ["wordle", "score", "calculator"],
   "author": "",
