@@ -178,9 +178,26 @@
   <% } %>
 
   <!-- Scoring System Info -->
-  <div id="scoringSystemSection" class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6 border border-gray-700" style="display: none;">
-    <h2 class="text-xl font-bold text-orange-500 mb-4">Scoring System (Higher is Better)</h2>
-    <div class="grid md:grid-cols-2 gap-4 text-gray-300">
+  <div id="scoringSystemSection" class="mb-6" style="display: none;">
+    <!-- Expandable Scoring System Button -->
+    <div class="text-center mb-4">
+      <button
+        id="toggleScoringSystem"
+        class="text-orange-400 hover:text-orange-300 transition-colors font-semibold text-sm uppercase tracking-wide flex items-center gap-2 mx-auto"
+        onclick="toggleScoringSystem()"
+      >
+        <span id="toggleScoringText">Show</span> Scoring System
+        <svg id="toggleScoringIcon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Expandable Scoring System Content -->
+    <div id="scoringSystemContent" class="expandable-content collapsed">
+      <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+        <h2 class="text-xl font-bold text-orange-500 mb-4">Scoring System (Higher is Better)</h2>
+        <div class="grid md:grid-cols-2 gap-4 text-gray-300">
       <div>
         <h3 class="font-semibold text-gray-200 mb-2">Box Points (add to score):</h3>
         <ul class="space-y-1 text-sm">
@@ -203,6 +220,8 @@
         </ul>
         <p class="text-xs text-gray-400 mt-2">Penalties add to your score (making it worse)</p>
         <p class="text-xs text-red-400 mt-1 font-semibold">Failure penalty: +10 points if not completed</p>
+      </div>
+    </div>
       </div>
     </div>
   </div>
@@ -236,6 +255,25 @@
       detailsSection.classList.add('collapsed');
       toggleText.textContent = 'Show';
       toggleIcon.style.transform = 'rotate(0deg)';
+    }
+  }
+
+  // Toggle scoring system section
+  function toggleScoringSystem() {
+    const scoringSystemContent = document.getElementById('scoringSystemContent');
+    const toggleScoringText = document.getElementById('toggleScoringText');
+    const toggleScoringIcon = document.getElementById('toggleScoringIcon');
+    
+    if (scoringSystemContent.classList.contains('collapsed')) {
+      scoringSystemContent.classList.remove('collapsed');
+      scoringSystemContent.classList.add('expanded');
+      toggleScoringText.textContent = 'Hide';
+      toggleScoringIcon.style.transform = 'rotate(180deg)';
+    } else {
+      scoringSystemContent.classList.remove('expanded');
+      scoringSystemContent.classList.add('collapsed');
+      toggleScoringText.textContent = 'Show';
+      toggleScoringIcon.style.transform = 'rotate(0deg)';
     }
   }
 
