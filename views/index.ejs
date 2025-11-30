@@ -169,7 +169,11 @@
         id="copyButton"
         class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
       >
-        Copy Result
+        <% 
+          const isCompleted = result.failurePenalty === 0;
+          const guessText = isCompleted ? `${result.attempts}/6` : `${result.attempts}/6 guesses`;
+        %>
+        Copy Result (<%= guessText %>)
       </button>
       <div id="copySuccess" class="mt-3 text-center text-green-400 text-sm" style="display: none;">
         ✓ Copied to clipboard!
