@@ -1,4 +1,5 @@
 
+
     Perform a full end-of-project cleanup on this codebase. Before making any change, check whether the step is already complete; if it is, skip it. Only modify the code when it improves clarity, correctness, maintainability, or test coverage. Do not make cosmetic or unnecessary changes. Execute the steps in this order:
 
     1. Refactor for clarity and maintainability: simplify logic, remove duplication, and standardize naming. Skip if the code already follows good structure.
