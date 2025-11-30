@@ -7,7 +7,7 @@
     "build": "tsc --version && tsc",
     "postbuild": "ls -la dist/ && test -f dist/server.js || (echo 'ERROR: dist/server.js not found after build!' && exit 1)",
     "build:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --minify",
-    "start": "node dist/server.js",
+    "start": "pwd && ls -la && ls -la dist/ && node dist/server.js",
     "dev": "nodemon",
     "watch:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch",
     "test": "echo \"Error: no test runner configured\" && exit 1"
