@@ -4,8 +4,8 @@
   "description": "Wordle Score Calculator - Calculate scores from Wordle share text",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
-    "postbuild": "test -f dist/server.js || (echo 'ERROR: dist/server.js not found after build!' && exit 1)",
+    "build": "tsc --version && tsc",
+    "postbuild": "ls -la dist/ && test -f dist/server.js || (echo 'ERROR: dist/server.js not found after build!' && exit 1)",
     "start": "node dist/server.js",
     "dev": "nodemon",
     "watch:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch",
