@@ -7,15 +7,23 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Configure view engine
+// In production (dist/), views are in parent directory; in dev, they're in current directory
+const viewsPath = __dirname.includes('dist') 
+  ? path.join(__dirname, '..', 'views')
+  : path.join(__dirname, 'views');
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', viewsPath);
 app.use(expressLayouts);
 app.set('layout', 'layout');
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+// In production (dist/), public is in parent directory; in dev, it's in current directory
+const publicPath = __dirname.includes('dist')
+  ? path.join(__dirname, '..', 'public')
+  : path.join(__dirname, 'public');
+app.use(express.static(publicPath));
 
 // Routes
 app.use('/', indexRouter);
