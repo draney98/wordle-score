@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
+    "prestart": "test -f dist/server.js || (echo 'Error: dist/server.js not found. Build may have failed.' && exit 1)",
     "dev": "nodemon",
     "watch:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch",
     "test": "echo \"Error: no test runner configured\" && exit 1"

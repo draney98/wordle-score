@@ -3,7 +3,7 @@ services:
     name: wordle-score
     env: node
     buildCommand: npm install && npm run build && npx tailwindcss -i ./public/css/input.css -o ./public/css/output.css --minify
-    startCommand: node dist/server.js
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
