@@ -6,7 +6,7 @@
   </div>
 
   <!-- Input Form -->
-  <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+  <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6" id="inputFormSection">
     <form method="POST" action="/score" id="wordleForm">
       <div class="mb-4">
         <div class="flex justify-between items-center mb-2">
@@ -175,6 +175,17 @@
         ✓ Copied to clipboard!
       </div>
     </div>
+
+    <!-- New Score Button -->
+    <div class="mt-6 text-center">
+      <button
+        id="newScoreButton"
+        class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors text-lg"
+        onclick="showNewScoreForm()"
+      >
+        Score a New Wordle
+      </button>
+    </div>
   <% } %>
 
   <!-- Scoring System Info -->
@@ -228,8 +239,46 @@
     }
   }
 
+  // Show new score form and hide results
+  function showNewScoreForm() {
+    const inputFormSection = document.getElementById('inputFormSection');
+    const resultsSection = document.getElementById('resultsSection');
+    const wordleTextarea = document.getElementById('wordleText');
+    
+    // Show the input form
+    if (inputFormSection) {
+      inputFormSection.style.display = 'block';
+    }
+    
+    // Hide the results section
+    if (resultsSection) {
+      resultsSection.style.display = 'none';
+    }
+    
+    // Clear the textarea
+    if (wordleTextarea) {
+      wordleTextarea.value = '';
+    }
+    
+    // Scroll to top smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Focus on the textarea
+    if (wordleTextarea) {
+      setTimeout(() => wordleTextarea.focus(), 300);
+    }
+  }
+
   // Generate sample Wordle result
   document.addEventListener('DOMContentLoaded', function() {
+    // Hide input form if results are shown
+    <% if (typeof result !== 'undefined' && result) { %>
+      const inputFormSection = document.getElementById('inputFormSection');
+      if (inputFormSection) {
+        inputFormSection.style.display = 'none';
+      }
+    <% } %>
+    
     const generateButton = document.getElementById('generateSampleButton');
     const wordleTextarea = document.getElementById('wordleText');
     
