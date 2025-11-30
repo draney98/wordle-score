@@ -1,0 +1,315 @@
+<div class="max-w-4xl mx-auto">
+  <!-- Hero Section -->
+  <div class="text-center mb-8">
+    <h1 class="text-4xl font-bold text-orange-500 mb-2">Wordle Score Calculator</h1>
+    <p class="text-gray-400">Paste your Wordle share text to calculate your score</p>
+  </div>
+
+  <!-- Scoring System Info -->
+  <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6 border border-gray-700">
+    <h2 class="text-xl font-bold text-orange-500 mb-4">Scoring System (Higher is Better)</h2>
+    <div class="grid md:grid-cols-2 gap-4 text-gray-300">
+      <div>
+        <h3 class="font-semibold text-gray-200 mb-2">Box Points (add to score):</h3>
+        <ul class="space-y-1 text-sm">
+          <li>⬛ Black box: <span class="text-red-400 font-semibold">+2 points</span> (bad)</li>
+          <li>🟨 Yellow box: <span class="text-yellow-400 font-semibold">+1 point</span> (ok)</li>
+          <li>🟩 Green box: <span class="text-green-400 font-semibold">+0 points</span> (good)</li>
+        </ul>
+        <p class="text-xs text-gray-400 mt-2">Perfect score = 100 (all green on first guess)</p>
+        <p class="text-xs text-gray-400 mt-1">Final score = |100 - raw score| (failure = 0)</p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-200 mb-2">Per-Guess Penalty (adds to score):</h3>
+        <ul class="space-y-1 text-sm">
+          <li>Guess 1: <span class="text-green-400 font-semibold">+0 penalty</span></li>
+          <li>Guess 2: <span class="text-orange-400 font-semibold">+2 penalty</span></li>
+          <li>Guess 3: <span class="text-orange-400 font-semibold">+4 penalty</span></li>
+          <li>Guess 4+: <span class="text-orange-400 font-semibold">+(guess - 1) × 2</span></li>
+        </ul>
+        <p class="text-xs text-gray-400 mt-2">Penalties add to your score (making it worse)</p>
+        <p class="text-xs text-red-400 mt-1 font-semibold">Failure penalty: +10 points if not completed</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Form -->
+  <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+    <form method="POST" action="/score" id="wordleForm">
+      <div class="mb-4">
+        <div class="flex justify-between items-center mb-2">
+          <label for="wordleText" class="block text-sm font-medium text-gray-300">
+            Wordle Share Text
+          </label>
+          <button
+            type="button"
+            id="generateSampleButton"
+            class="text-sm bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1 rounded transition-colors"
+          >
+            Generate Sample
+          </button>
+        </div>
+        <textarea
+          id="wordleText"
+          name="wordleText"
+          rows="6"
+          class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          placeholder="Paste your Wordle share text here...&#10;&#10;Example:&#10;Wordle 123 3/6&#10;&#10;⬛🟨🟩⬛🟨&#10;🟨🟩🟨🟩🟩&#10;🟩🟩🟩🟩🟩"
+          required
+        ><%= typeof wordleText !== 'undefined' && wordleText ? wordleText : '' %></textarea>
+      </div>
+      <button
+        type="submit"
+        class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+      >
+        Calculate Score
+      </button>
+    </form>
+  </div>
+
+  <!-- Error Message -->
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="bg-red-900 border border-red-700 rounded-lg p-4 mb-6">
+      <p class="text-red-200"><%= error %></p>
+    </div>
+  <% } %>
+
+  <!-- Results Section -->
+  <% if (typeof result !== 'undefined' && result) { %>
+    <% 
+      // Calculate running totals (raw scores, then transform to final scores)
+      let runningTotal = 0;
+      const runningTotals = [];
+      result.guesses.forEach((guess, index) => {
+        const boxScore = result.boxScores[index];
+        const penalty = result.guessPenalties[index];
+        // Both box score and penalty add to raw total
+        runningTotal += boxScore + penalty;
+        // Transform: abs(100 - rawScore) for display (higher is better)
+        runningTotals.push(Math.abs(100 - runningTotal));
+      });
+      // Add failure penalty to the last running total if applicable
+      if (result.failurePenalty > 0) {
+        runningTotal += result.failurePenalty;
+        runningTotals[runningTotals.length - 1] = Math.abs(100 - runningTotal);
+      }
+    %>
+    <div class="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-orange-500" id="resultsSection">
+      <!-- Main Score Display - Exciting CSS Magic -->
+      <div class="text-center mb-8 score-reveal">
+        <div class="inline-block score-badge">
+          <div class="bg-gradient-to-br from-orange-800 via-orange-700 to-orange-600 rounded-2xl p-8 score-glow relative border-2 border-orange-400/60 shadow-2xl">
+            <div class="absolute inset-0 bg-gradient-to-br from-orange-400/30 to-transparent rounded-2xl"></div>
+            <div class="relative z-10">
+              <p class="text-orange-100 text-sm uppercase tracking-wider mb-2 font-semibold">Final Score</p>
+              <div class="text-7xl md:text-8xl font-black number-count" style="font-variant-numeric: tabular-nums;">
+                <span class="text-white" style="text-shadow: 
+                  4px 4px 8px rgba(0,0,0,1),
+                  0 0 20px rgba(249,115,22,0.9),
+                  0 0 40px rgba(249,115,22,0.7),
+                  0 0 60px rgba(249,115,22,0.5),
+                  2px 2px 4px rgba(0,0,0,0.8);"><%= result.totalScore %></span>
+              </div>
+              <p class="text-orange-50 text-lg mt-2 font-semibold">out of 100</p>
+              <% if (result.totalScore >= 90) { %>
+                <div class="mt-4 text-yellow-300 text-xl font-bold animate-pulse">🌟 Excellent! 🌟</div>
+              <% } else if (result.totalScore >= 70) { %>
+                <div class="mt-4 text-green-300 text-xl font-bold">✨ Great Job! ✨</div>
+              <% } else if (result.totalScore >= 50) { %>
+                <div class="mt-4 text-blue-300 text-xl font-bold">👍 Good Effort!</div>
+              <% } else if (result.totalScore >= 30) { %>
+                <div class="mt-4 text-orange-300 text-xl font-bold">💪 Keep Trying!</div>
+              <% } else { %>
+                <div class="mt-4 text-red-300 text-xl font-bold">🎯 Practice Makes Perfect!</div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expandable Details Button -->
+      <div class="text-center mb-4">
+        <button
+          id="toggleDetails"
+          class="text-orange-400 hover:text-orange-300 transition-colors font-semibold text-sm uppercase tracking-wide flex items-center gap-2 mx-auto"
+          onclick="toggleDetails()"
+        >
+          <span id="toggleText">Show</span> Detailed Breakdown
+          <svg id="toggleIcon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Expandable Score Breakdown -->
+      <div id="detailsSection" class="expandable-content collapsed mb-4">
+        <!-- Guesses with Running Totals -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-300 mb-3">Your Guesses</h3>
+          <div class="bg-gray-900 rounded-lg p-4 font-mono text-2xl leading-relaxed">
+            <% result.guesses.forEach((guess, index) => { %>
+              <div class="mb-2 flex items-center justify-between hover:bg-gray-800/50 p-2 rounded transition-colors">
+                <span><%= guess %></span>
+                <span class="text-lg font-bold text-orange-500 ml-4"><%= runningTotals[index] %> pts</span>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+
+        <!-- Score Breakdown -->
+        <div class="bg-gray-900 rounded-lg p-4">
+          <h3 class="text-lg font-semibold text-gray-300 mb-3">Score Breakdown</h3>
+          <div class="space-y-2 text-gray-300 font-mono text-lg">
+            <% 
+              let breakdownRawTotal = 0;
+              result.guesses.forEach((guess, index) => {
+                const boxScore = result.boxScores[index];
+                const penalty = result.guessPenalties[index];
+                // Net points for this guess: box score + penalty (both add to raw score)
+                const netPoints = boxScore + penalty;
+                breakdownRawTotal += netPoints;
+                // Transform for display: abs(100 - rawTotal) - higher is better
+                const transformedTotal = Math.abs(100 - breakdownRawTotal);
+            %>
+              <div class="flex items-center hover:bg-gray-800/30 p-2 rounded transition-colors">
+                <span class="mr-4"><%= guess %></span>
+                <span class="text-orange-400">-<%= netPoints %></span>
+                <span class="text-gray-400 mx-2">,</span>
+                <span class="text-orange-500 font-semibold"><%= transformedTotal %></span>
+              </div>
+            <% }); %>
+            <% if (result.failurePenalty > 0) { %>
+              <% breakdownRawTotal += result.failurePenalty; %>
+              <% const transformedTotal = Math.abs(100 - breakdownRawTotal); %>
+              <div class="flex items-center pt-2 border-t border-gray-700 hover:bg-gray-800/30 p-2 rounded transition-colors">
+                <span class="mr-4 text-red-400">Failed to complete</span>
+                <span class="text-red-400">-<%= result.failurePenalty %></span>
+                <span class="text-gray-400 mx-2">,</span>
+                <span class="text-red-500 font-semibold"><%= transformedTotal %></span>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Copy Button -->
+      <button
+        id="copyButton"
+        class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+      >
+        Copy Result
+      </button>
+      <div id="copySuccess" class="mt-3 text-center text-green-400 text-sm" style="display: none;">
+        ✓ Copied to clipboard!
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<script>
+  // Toggle details section
+  function toggleDetails() {
+    const detailsSection = document.getElementById('detailsSection');
+    const toggleText = document.getElementById('toggleText');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (detailsSection.classList.contains('collapsed')) {
+      detailsSection.classList.remove('collapsed');
+      detailsSection.classList.add('expanded');
+      toggleText.textContent = 'Hide';
+      toggleIcon.style.transform = 'rotate(180deg)';
+    } else {
+      detailsSection.classList.remove('expanded');
+      detailsSection.classList.add('collapsed');
+      toggleText.textContent = 'Show';
+      toggleIcon.style.transform = 'rotate(0deg)';
+    }
+  }
+
+  // Generate sample Wordle result
+  document.addEventListener('DOMContentLoaded', function() {
+    const generateButton = document.getElementById('generateSampleButton');
+    const wordleTextarea = document.getElementById('wordleText');
+    
+    if (generateButton) {
+      generateButton.addEventListener('click', function() {
+        // Generate random number of guesses (1-6)
+        const numGuesses = Math.floor(Math.random() * 6) + 1;
+        const boxes = ['⬛', '🟨', '🟩'];
+        const sampleLines = [];
+        
+        // Generate each guess with 5 boxes
+        for (let i = 0; i < numGuesses; i++) {
+          let line = '';
+          // Make it progressively better (more greens in later guesses)
+          for (let j = 0; j < 5; j++) {
+            const rand = Math.random();
+            let box;
+            if (i === numGuesses - 1) {
+              // Last guess is always all green (winning guess)
+              box = '🟩';
+            } else if (rand < 0.3 + (i * 0.1)) {
+              // More greens as guesses progress
+              box = '🟩';
+            } else if (rand < 0.6 + (i * 0.1)) {
+              box = '🟨';
+            } else {
+              box = '⬛';
+            }
+            line += box;
+          }
+          sampleLines.push(line);
+        }
+        
+        const sampleText = sampleLines.join('\n');
+        
+        // Copy to clipboard
+        navigator.clipboard.writeText(sampleText).then(function() {
+          // Also fill the textarea
+          if (wordleTextarea) {
+            wordleTextarea.value = sampleText;
+          }
+          
+          // Show brief success message
+          const originalText = generateButton.textContent;
+          generateButton.textContent = '✓ Copied!';
+          generateButton.classList.add('bg-green-600', 'hover:bg-green-700');
+          generateButton.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+          
+          setTimeout(function() {
+            generateButton.textContent = originalText;
+            generateButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+            generateButton.classList.add('bg-gray-700', 'hover:bg-gray-600');
+          }, 2000);
+        }).catch(function(err) {
+          console.error('Failed to copy:', err);
+          alert('Failed to copy to clipboard');
+        });
+      });
+    }
+    
+    <% if (typeof result !== 'undefined' && result) { %>
+      // Copy functionality for results
+      const copyButton = document.getElementById('copyButton');
+      const copySuccess = document.getElementById('copySuccess');
+      
+      if (copyButton) {
+        copyButton.addEventListener('click', function() {
+          // Format: original boxes + newline + "Score: X points"
+          const formattedText = `<%= result.guesses.join('\\n') %>\nScore: <%= result.totalScore %> points`;
+          
+          navigator.clipboard.writeText(formattedText).then(function() {
+            copySuccess.style.display = 'block';
+            setTimeout(function() {
+              copySuccess.style.display = 'none';
+            }, 2000);
+          }).catch(function(err) {
+            console.error('Failed to copy:', err);
+            alert('Failed to copy to clipboard');
+          });
+        });
+      }
+    <% } %>
+  });
+</script>
+

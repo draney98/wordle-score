@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  /* Score display animations */
+  @keyframes scoreReveal {
+    0% {
+      opacity: 0;
+      transform: scale(0.5) rotateY(180deg);
+    }
+    50% {
+      transform: scale(1.1) rotateY(90deg);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) rotateY(0deg);
+    }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(249, 115, 22, 0.5),
+                  0 0 40px rgba(249, 115, 22, 0.3),
+                  0 0 60px rgba(249, 115, 22, 0.2);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(249, 115, 22, 0.8),
+                  0 0 60px rgba(249, 115, 22, 0.5),
+                  0 0 90px rgba(249, 115, 22, 0.3);
+    }
+  }
+
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  @keyframes numberCount {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      max-height: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      max-height: 1000px;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 1;
+      max-height: 1000px;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      max-height: 0;
+      transform: translateY(-10px);
+    }
+  }
+
+  .score-reveal {
+    animation: scoreReveal 1s ease-out;
+  }
+
+  .score-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  .score-gradient {
+    /* Gradient glow effect - not used for text color, just for reference */
+    background: linear-gradient(135deg, #ea580c, #f97316, #fb923c, #f97316, #ea580c);
+    background-size: 300% 300%;
+    animation: gradientShift 3s ease infinite;
+  }
+
+  .number-count {
+    animation: numberCount 0.8s ease-out;
+  }
+
+  .expandable-content {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.4s ease-out, opacity 0.4s ease-out;
+  }
+
+  .expandable-content.expanded {
+    max-height: 2000px;
+    opacity: 1;
+  }
+
+  .expandable-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+  }
+
+  .score-badge {
+    position: relative;
+    display: inline-block;
+  }
+
+  .score-badge::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    padding: 4px;
+    background: linear-gradient(135deg, #f97316, #fb923c, #fdba74, #f97316);
+    background-size: 300% 300%;
+    animation: gradientShift 3s ease infinite;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.6;
+  }
+}
+
