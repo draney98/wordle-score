@@ -408,12 +408,8 @@
       if (copyButton) {
         copyButton.addEventListener('click', function() {
           // Format: guess count + original boxes + newline + "Score: X points"
-          <% 
-            const lastGuess = result.guesses[result.guesses.length - 1];
-            const isCompleted = lastGuess === '🟩🟩🟩🟩🟩';
-            const guessText = isCompleted ? `${result.attempts}/6` : `${result.attempts}/6 guesses`;
-          %>
-          const formattedText = `<%= guessText %>\n<%= result.guesses.join('\\n') %>\nScore: <%= result.totalScore %> points`;
+          // Always show X/6 where X is the number of guesses
+          const formattedText = `<%= result.attempts %>/6\n<%= result.guesses.join('\\n') %>\nScore: <%= result.totalScore %> points`;
           
           navigator.clipboard.writeText(formattedText).then(function() {
             copySuccess.style.display = 'block';
