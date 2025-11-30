@@ -169,11 +169,7 @@
         id="copyButton"
         class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
       >
-        <% 
-          const isCompleted = result.failurePenalty === 0;
-          const guessText = isCompleted ? `${result.attempts}/6` : `${result.attempts}/6 guesses`;
-        %>
-        Copy Result (<%= guessText %>)
+        Copy Result
       </button>
       <div id="copySuccess" class="mt-3 text-center text-green-400 text-sm" style="display: none;">
         ✓ Copied to clipboard!
@@ -411,8 +407,12 @@
       
       if (copyButton) {
         copyButton.addEventListener('click', function() {
-          // Format: original boxes + newline + "Score: X points"
-          const formattedText = `<%= result.guesses.join('\\n') %>\nScore: <%= result.totalScore %> points`;
+          // Format: guess count + original boxes + newline + "Score: X points"
+          <% 
+            const isCompleted = result.failurePenalty === 0;
+            const guessText = isCompleted ? `${result.attempts}/6` : `${result.attempts}/6 guesses`;
+          %>
+          const formattedText = `<%= guessText %>\n<%= result.guesses.join('\\n') %>\nScore: <%= result.totalScore %> points`;
           
           navigator.clipboard.writeText(formattedText).then(function() {
             copySuccess.style.display = 'block';
