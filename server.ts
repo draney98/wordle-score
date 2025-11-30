@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import expressLayouts from 'express-ejs-layouts';
 import indexRouter from './routes/index';
 
@@ -23,6 +24,8 @@ app.use(express.urlencoded({ extended: true }));
 const publicPath = __dirname.includes('dist')
   ? path.join(__dirname, '..', 'public')
   : path.join(__dirname, 'public');
+console.log(`Serving static files from: ${publicPath}`);
+console.log(`CSS file exists: ${fs.existsSync(path.join(publicPath, 'css', 'output.css'))}`);
 app.use(express.static(publicPath));
 
 // Routes

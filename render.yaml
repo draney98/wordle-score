@@ -2,7 +2,7 @@ services:
   - type: web
     name: wordle-score
     env: node
-    buildCommand: npm install && npm run build && npx tailwindcss -i ./public/css/input.css -o ./public/css/output.css --minify
+    buildCommand: npm install && npm run build && npx tailwindcss -i ./public/css/input.css -o ./public/css/output.css --minify && test -f ./public/css/output.css || (echo 'ERROR: CSS file not generated!' && exit 1)
     startCommand: npm start
     envVars:
       - key: NODE_ENV
