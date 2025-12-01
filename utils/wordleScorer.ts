@@ -21,11 +21,6 @@ const BOX_SCORES: Record<string, number> = {
 };
 
 /**
- * Valid box emoji characters for Wordle.
- */
-const VALID_BOXES = ['⬛', '🟨', '🟩'] as const;
-
-/**
  * Valid total box counts (5 boxes per guess, 1-6 guesses allowed).
  */
 const VALID_TOTALS = [5, 10, 15, 20, 25, 30] as const;

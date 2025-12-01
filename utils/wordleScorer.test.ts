@@ -55,9 +55,7 @@ describe('scoreWordle', () => {
       
       // All variations should be normalized to black squares
       expect(result.guesses[0]).toBe('⬛⬛⬛⬛🟨');
-      expect(result.boxScores[0]).toBe(6); // 4 black variations × 2 + 1 yellow × 1 = 9, wait no: 4×2 + 1×1 = 9
-      // Actually: 4 black boxes (normalized) = 8 points, 1 yellow = 1 point, total = 9
-      // But let me check: the first 4 should all be black after normalization
+      // 4 black boxes (normalized) = 8 points, 1 yellow = 1 point, total = 9
       expect(result.boxScores[0]).toBe(9); // 4×2 + 1×1 = 9
     });
   });
