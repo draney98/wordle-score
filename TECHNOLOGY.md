@@ -231,6 +231,344 @@ After the page loads, JavaScript in the browser handles user interactions:
 
 Together, these technologies create a simple, maintainable, and performant web application that processes Wordle scores efficiently.
 
+## Timeline: Complete Application Lifecycle
+
+This section provides a chronological walkthrough of the application from service startup through a user completing all major functions.
+
+### Phase 1: Service Startup (t=0 seconds)
+
+**1. Node.js Process Starts**
+- The operating system launches Node.js with the command `node dist/server.js`
+- Node.js loads the compiled JavaScript from `dist/server.js`
+- The JavaScript runtime initializes
+
+**2. Express Application Initialization**
+- `server.ts` (now compiled to `server.js`) executes
+- Express app is created: `const app = express()`
+- Port is determined: `process.env.PORT || 3000` (3000 in development, assigned port in production)
+
+**3. View Engine Configuration**
+- Express is configured to use EJS: `app.set('view engine', 'ejs')`
+- Views directory is set with path resolution:
+  ```typescript
+  const viewsPath = __dirname.includes('dist')
+    ? path.join(__dirname, '..', 'views')  // Production
+    : path.join(__dirname, 'views');       // Development
+  ```
+- Express EJS Layouts middleware is added: `app.use(expressLayouts)`
+- Default layout is set: `app.set('layout', 'layout')`
+
+**4. Middleware Setup**
+- JSON parser middleware: `app.use(express.json())` (for JSON request bodies)
+- URL-encoded parser: `app.use(express.urlencoded({ extended: true }))` (for form submissions)
+- Static file middleware: `app.use(express.static(publicPath))` (serves CSS, images, etc.)
+- Console logs show the static file path and CSS file existence
+
+**5. Route Registration**
+- Route handler from `routes/index.ts` is registered: `app.use('/', indexRouter)`
+- Two routes are now available:
+  - `GET /` → renders homepage
+  - `POST /score` → processes Wordle score
+
+**6. Server Listens**
+- `app.listen(PORT, callback)` starts the HTTP server
+- Server is now listening on the specified port
+- Console logs: `"Server running on http://localhost:3000"`
+- Application is ready to accept requests
+
+### Phase 2: User Visits Homepage (t=5 seconds)
+
+**1. Browser Request**
+- User types URL or clicks link: `https://wordle-score.onrender.com/`
+- Browser sends HTTP GET request to the server
+- Request includes headers (User-Agent, Accept, etc.)
+
+**2. Express Receives Request**
+- Express HTTP server receives the GET request
+- Express middleware stack processes the request:
+  - Static middleware checks if it's a static file request (it's not)
+  - Request continues to route handlers
+
+**3. Route Matching**
+- Express matches the request path `/` to the route handler in `routes/index.ts`
+- The GET handler executes:
+  ```typescript
+  router.get('/', (req: Request, res: Response) => {
+    res.render('index', { result: null, error: null, wordleText: '' });
+  });
+  ```
+
+**4. EJS Template Rendering**
+- Express calls `res.render('index', data)`
+- Express EJS Layouts system loads `views/layout.ejs` first
+- Layout template processes:
+  - `<%- body %>` placeholder is identified
+  - `views/index.ejs` is loaded and processed
+  - EJS processes template tags:
+    - `<% %>` logic tags evaluate JavaScript
+    - `<%= %>` output tags escape and output values
+    - Conditional logic: `<% if (typeof result !== 'undefined' && result) { %>` evaluates to false
+    - Input form section is rendered
+    - Results section is skipped (no result data)
+    - Scoring system section is hidden (display: none)
+- Layout wraps the page content:
+  - Navigation bar is rendered
+  - Page content is inserted at `<%- body %>`
+  - Footer is rendered
+- Complete HTML is generated
+
+**5. CSS Reference**
+- Generated HTML includes: `<link rel="stylesheet" href="/css/output.css">`
+- Browser will request this file separately
+
+**6. Response Sent**
+- Express sends the complete HTML response
+- HTTP status code: 200 OK
+- Response headers include Content-Type: text/html
+
+**7. Browser Receives HTML**
+- Browser receives the HTML document
+- Browser begins parsing the HTML
+- Browser encounters the CSS link and sends a new request for `/css/output.css`
+
+**8. Static File Serving**
+- Express static middleware intercepts the CSS request
+- File is read from `public/css/output.css`
+- CSS file is sent to browser (Content-Type: text/css)
+
+**9. Page Rendering**
+- Browser parses HTML and CSS
+- Tailwind CSS classes are applied:
+  - `bg-gray-900` sets dark background
+  - `text-orange-500` sets orange text
+  - `rounded-lg` adds border radius
+  - Layout and spacing classes position elements
+- Page is fully rendered and visible to user
+- Input form is displayed and ready for input
+
+### Phase 3: User Submits Wordle Score (t=30 seconds)
+
+**1. User Input**
+- User pastes Wordle share text into the textarea
+- Text might include: `"⬛🟨🟩⬛🟨\n🟨🟩🟨🟩🟩\n🟩🟩🟩🟩🟩"`
+- User clicks "Calculate Score" button
+
+**2. Form Submission**
+- HTML form submits via POST method to `/score`
+- Form data is encoded as `application/x-www-form-urlencoded`
+- Browser sends POST request with body: `wordleText=⬛🟨🟩⬛🟨...`
+
+**3. Express Parses Request**
+- Express `express.urlencoded()` middleware parses the form data
+- Data is available as `req.body.wordleText`
+- Request continues to route handler
+
+**4. Route Handler Execution**
+- POST handler in `routes/index.ts` executes
+- Input validation occurs:
+  ```typescript
+  if (!wordleText || typeof wordleText !== 'string' || wordleText.trim() === '') {
+    return res.render('index', { error: 'Please provide Wordle share text' });
+  }
+  ```
+- Validation passes, execution continues
+
+**5. TypeScript Business Logic**
+- Handler calls `scoreWordle(wordleText)` from `utils/wordleScorer.ts`
+- TypeScript function executes:
+  - `extractBoxes()` iterates through each character
+  - `normalizeBoxChar()` converts gray boxes (⬜, ⚫) to black (⬛)
+  - Boxes are extracted: `['⬛', '🟨', '🟩', '⬛', '🟨', ...]`
+  - `validateBoxCount()` checks total is 5, 10, 15, 20, 25, or 30
+  - `groupBoxesIntoRows()` creates rows: `['⬛🟨🟩⬛🟨', '🟨🟩🟨🟩🟩', '🟩🟩🟩🟩🟩']`
+  - `calculateBoxScore()` calculates points for each row
+  - `calculateGuessPenalty()` adds penalties (guess 1: 0, guess 2: +2, etc.)
+  - `isWordleCompleted()` checks if last row is all green
+  - `transformScore()` converts raw score: `Math.abs(100 - rawScore)`
+- Function returns `ScoreResult` object with all calculated data
+
+**6. Template Rendering with Results**
+- Handler calls `res.render('index', { result, error: null, wordleText: '' })`
+- EJS processes `views/index.ejs` again, this time with result data
+- Template logic executes:
+  - `<% if (typeof result !== 'undefined' && result) { %>` evaluates to true
+  - Results section is rendered:
+    - Score calculation: running totals are computed
+    - Main score display: animated score badge is generated
+    - Detailed breakdown section: collapsed by default
+    - Copy button is rendered
+  - Input form section would be hidden by JavaScript (not in template)
+- Layout wraps the results page
+- Complete HTML with results is generated
+
+**7. Response with Results**
+- Express sends HTML response with results
+- Browser receives the new HTML
+- Browser replaces the current page content
+
+**8. Client-Side JavaScript Execution**
+- Browser executes JavaScript in the page
+- `DOMContentLoaded` event has already fired, but code runs on page load
+- JavaScript checks for results:
+  ```javascript
+  <% if (typeof result !== 'undefined' && result) { %>
+    // Results-specific code runs
+  <% } %>
+  ```
+- Input form is hidden: `inputFormSection.style.display = 'none'`
+- Scoring system section is shown: `scoringSystemSection.style.display = 'block'`
+- New score button section is shown: `newScoreButtonSection.style.display = 'block'`
+- Results are now fully visible to user
+
+### Phase 4: User Views Detailed Breakdown (t=45 seconds)
+
+**1. User Interaction**
+- User clicks "Show Detailed Breakdown" button
+- JavaScript event listener fires: `onclick="toggleDetails()"`
+
+**2. JavaScript Toggle Function**
+- `toggleDetails()` function executes
+- Checks if details section has `collapsed` class
+- If collapsed:
+  - Removes `collapsed` class
+  - Adds `expanded` class
+  - Changes button text to "Hide"
+  - Rotates icon 180 degrees
+- CSS transition animates the expansion:
+  - `max-height` transitions from 0 to 2000px
+  - `opacity` transitions from 0 to 1
+  - Animation duration: 0.4 seconds
+
+**3. Content Display**
+- Detailed breakdown section becomes visible
+- Shows:
+  - All guesses with running point totals
+  - Score breakdown with net points per guess
+  - Failure penalty (if applicable)
+- User can see exactly how the score was calculated
+
+**4. User Collapses Section**
+- User clicks "Hide Detailed Breakdown"
+- Same toggle function runs in reverse
+- Section collapses with animation
+- Button text changes back to "Show"
+
+### Phase 5: User Views Scoring System (t=60 seconds)
+
+**1. User Clicks Toggle**
+- User clicks "Show Scoring System" button
+- `toggleScoringSystem()` function executes
+- Same expand/collapse mechanism as detailed breakdown
+
+**2. Scoring System Display**
+- Scoring system content expands
+- Shows:
+  - Box point values (⬛ = -2, 🟨 = -1, 🟩 = +0)
+  - Per-guess penalties (Guess 1: 0, Guess 2: -2, etc.)
+  - Failure penalty explanation
+- User understands how scoring works
+
+### Phase 6: User Copies Result (t=75 seconds)
+
+**1. User Clicks Copy Button**
+- User clicks "Copy Result" button
+- JavaScript event listener fires:
+  ```javascript
+  copyButton.addEventListener('click', function() {
+    // Copy logic
+  });
+  ```
+
+**2. Text Formatting**
+- JavaScript formats the text to copy:
+  - Determines guess count format (X/6 guesses or X/6 guesses)
+  - Joins all guesses with newlines
+  - Adds score information
+  - Final format: `"3/6 guesses\n⬛🟨🟩⬛🟨\n🟨🟩🟨🟩🟩\n🟩🟩🟩🟩🟩\nScore: 95 points"`
+
+**3. Clipboard API**
+- Browser Clipboard API is called: `navigator.clipboard.writeText(formattedText)`
+- Text is copied to system clipboard
+- Promise resolves successfully
+
+**4. Success Feedback**
+- Success message appears: "✓ Copied to clipboard!"
+- Message auto-hides after 2 seconds
+- User can now paste the result anywhere
+
+### Phase 7: User Scores a New Wordle (t=90 seconds)
+
+**1. User Clicks "Score a New Wordle"**
+- User clicks the button at the bottom
+- `showNewScoreForm()` function executes
+
+**2. Form Restoration**
+- JavaScript manipulates the DOM:
+  - Input form section is shown: `inputFormSection.style.display = 'block'`
+  - Results section is hidden: `resultsSection.style.display = 'none'`
+  - Scoring system section is hidden: `scoringSystemSection.style.display = 'none'`
+  - New score button is hidden: `newScoreButtonSection.style.display = 'none'`
+  - Textarea is cleared: `wordleTextarea.value = ''`
+
+**3. Page Navigation**
+- Window scrolls to top: `window.scrollTo({ top: 0, behavior: 'smooth' })`
+- Textarea receives focus after 300ms delay
+- User is ready to input a new Wordle score
+
+**4. Repeat Process**
+- User can now repeat the entire process:
+  - Enter new Wordle text
+  - Submit form
+  - View results
+  - Copy result
+  - Score another Wordle
+
+### Phase 8: User Generates Sample (t=100 seconds)
+
+**1. User Clicks "Generate Sample"**
+- User clicks the "Generate Sample" button
+- JavaScript event listener fires
+
+**2. Sample Generation**
+- JavaScript generates random Wordle pattern:
+  - Random number of guesses (1-6)
+  - Progressively better guesses (more greens in later guesses)
+  - Last guess is always all green (winning pattern)
+  - Pattern is formatted as string
+
+**3. Clipboard and Form Fill**
+- Generated text is copied to clipboard: `navigator.clipboard.writeText(sampleText)`
+- Textarea is filled with the sample: `wordleTextarea.value = sampleText`
+- Button shows success feedback: "✓ Copied!"
+- Button returns to normal after 2 seconds
+
+**4. User Can Submit**
+- User can now submit the generated sample
+- Process continues as in Phase 3
+
+### Summary: Complete User Journey
+
+The complete timeline shows:
+1. **Service startup** (0s): Node.js, Express, and all middleware initialize
+2. **Homepage load** (5s): HTML is generated, CSS is served, page renders
+3. **Score submission** (30s): Form data is processed, TypeScript calculates score, results are rendered
+4. **Detail viewing** (45s): JavaScript toggles expandable sections
+5. **Scoring system** (60s): User learns how scoring works
+6. **Result copying** (75s): Clipboard API copies formatted text
+7. **New score** (90s): JavaScript resets the form for another score
+8. **Sample generation** (100s): JavaScript generates test data
+
+Throughout this journey, each technology plays its role:
+- **Node.js** provides the runtime
+- **Express** handles HTTP and routing
+- **TypeScript** ensures type safety and compiles to JavaScript
+- **EJS** generates dynamic HTML
+- **Tailwind CSS** styles the interface
+- **JavaScript** enables interactivity
+- **Browser APIs** provide advanced features (Clipboard)
+
+The application demonstrates a complete full-stack web application workflow, from server initialization through user interactions to data processing and presentation.
+
 ## Overview
 
 The Wordle Score Calculator is a full-stack web application built with Node.js, Express, TypeScript, EJS templating, and Tailwind CSS. It processes Wordle share text, calculates scores using a custom algorithm, and displays results with an animated UI.
