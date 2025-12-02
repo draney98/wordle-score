@@ -407,8 +407,19 @@
       
       if (copyButton) {
         copyButton.addEventListener('click', function() {
-          // Format: guess count + original boxes + newline + "Score: X points"
-          <% 
+          // Build formatted text with proper escaping for JavaScript context
+          // Use JSON.stringify to prevent template literal injection
+          <%
+            // Build the formatted text parts
+            const parts = [];
+            
+            // Add header line if present (from user input, needs escaping)
+            if (result.headerLine) {
+              parts.push(result.headerLine);
+              parts.push(''); // Empty line after header
+            }
+            
+            // Build guess text
             let guessText;
             if (result.attempts === 6) {
               const lastGuess = result.guesses[result.guesses.length - 1];
@@ -421,8 +432,24 @@
             } else {
               guessText = `${result.attempts}/6 guesses`;
             }
+            parts.push(guessText);
+            
+            // Add box lines (user-derived data, needs escaping)
+            parts.push(result.guesses.join('\n'));
+            
+            // Add empty line before score
+            parts.push('');
+            
+            // Add score line
+            parts.push(`Score: ${result.totalScore} points`);
+            
+            const formattedText = parts.join('\n');
+            // Properly escape for JavaScript string context using JSON.stringify
+            // This prevents injection via backticks, quotes, ${}, or other special characters
+            const escapedText = JSON.stringify(formattedText);
           %>
-          const formattedText = `<%= guessText %>\n<%= result.guesses.join('\\n') %>\nScore: <%= result.totalScore %> points`;
+          // Use JSON.stringify output directly (it's already a valid JavaScript string literal)
+          const formattedText = <%= escapedText %>;
           
           navigator.clipboard.writeText(formattedText).then(function() {
             copySuccess.style.display = 'block';
