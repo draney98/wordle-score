@@ -1,0 +1,39 @@
+Review the entire codebase with the goal of strengthening security without altering functionality. Make changes only when they directly reduce risk and never make cosmetic or structural changes that do not affect security. Before applying any fix, confirm that the code does not already meet the requirement.
+
+Scope of the review
+Check server code, client code, shared utilities, and all EJS templates. Examine all flows where data enters the system, moves through it, and is rendered to the browser.
+
+Primary goals
+Detect and correct issues related to:
+• Exposure of user input in markup or script blocks
+• Injection risks in template files
+• Code execution risks in TypeScript or JavaScript
+• Misuse of escaping in different output contexts
+• Missing or weak validation on inputs the server accepts
+
+Guidelines for analysis
+• Identify any place where data from requests, query strings, headers, cookies, database content, or file system input is written into templates or scripts
+• When user data is written into the markup, ensure the context uses the correct escaping
+• When user data is written into a script block, ensure it is encoded in a way that prevents it from breaking script syntax or injecting new logic
+• Confirm there is no unsafe use of functions that evaluate strings as code
+• Check that template literals in templates or scripts cannot be influenced by raw user data
+• Confirm that expressions inside templates never allow attacker controlled characters to form new script expressions
+• Check that business logic does not rely on unvalidated data
+
+Rules for fixes
+• Apply escaping or encoding that matches the exact output context
+• Wrap structured data intended for script blocks in a safe serialization step
+• Remove or rewrite any pattern that allows attacker data to form script expressions
+• Add validation only when missing and only when required to prevent a real security issue
+• Never alter behavior of routes, logic, templates, or rendering unless necessary to prevent a vulnerability
+• Keep the structure and style of the project intact
+• Skip any step the project already satisfies
+
+Output format for the assistant
+For each issue you find, provide:
+• A short statement describing the problem
+• The line or pattern that causes the risk
+• The reason this creates a security exposure
+• The minimal fix required
+
+After listing issues, apply only the required fixes to the code.
