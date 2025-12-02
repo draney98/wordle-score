@@ -48,131 +48,118 @@
 
   <!-- Results Section -->
   <% if (typeof result !== 'undefined' && result) { %>
-    
-    <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6" id="resultsSection">
-      <!-- Original Boxes Display -->
-      <div class="mb-6">
-        <h2 class="text-2xl font-bold text-orange-500 mb-4">Your Wordle Result</h2>
-        <div class="bg-gray-900 rounded-lg p-4">
-          <div class="space-y-2 text-2xl font-mono text-center">
-            <% result.guesses.forEach(function(guess) { %>
-              <div><%= guess %></div>
+    <% 
+      // Calculate running totals (raw scores, then transform to final scores)
+      let runningTotal = 0;
+      const runningTotals = [];
+      result.guesses.forEach((guess, index) => {
+        const boxScore = result.boxScores[index];
+        const penalty = result.guessPenalties[index];
+        // Both box score and penalty add to raw total
+        runningTotal += boxScore + penalty;
+        // Transform: abs(100 - rawScore) for display (higher is better)
+        runningTotals.push(Math.abs(100 - runningTotal));
+      });
+      // Add failure penalty to the last running total if applicable
+      if (result.failurePenalty > 0) {
+        runningTotal += result.failurePenalty;
+        runningTotals[runningTotals.length - 1] = Math.abs(100 - runningTotal);
+      }
+    %>
+    <div class="bg-gray-800 rounded-lg shadow-lg p-6 border-2 border-orange-500" id="resultsSection">
+      <!-- Main Score Display - Exciting CSS Magic -->
+      <div class="text-center mb-8 score-reveal">
+        <div class="inline-block score-badge">
+          <div class="bg-gradient-to-br from-orange-800 via-orange-700 to-orange-600 rounded-2xl p-8 score-glow relative border-2 border-orange-400/60 shadow-2xl">
+            <div class="absolute inset-0 bg-gradient-to-br from-orange-400/30 to-transparent rounded-2xl"></div>
+            <div class="relative z-10">
+              <p class="text-orange-100 text-sm uppercase tracking-wider mb-2 font-semibold">Final Score</p>
+              <div class="text-7xl md:text-8xl font-black number-count" style="font-variant-numeric: tabular-nums;">
+                <span class="text-white" style="text-shadow: 
+                  4px 4px 8px rgba(0,0,0,1),
+                  0 0 20px rgba(249,115,22,0.9),
+                  0 0 40px rgba(249,115,22,0.7),
+                  0 0 60px rgba(249,115,22,0.5),
+                  2px 2px 4px rgba(0,0,0,0.8);"><%= result.totalScore %></span>
+              </div>
+              <p class="text-orange-50 text-lg mt-2 font-semibold">out of 100</p>
+              <% if (result.totalScore >= 90) { %>
+                <div class="mt-4 text-yellow-300 text-xl font-bold animate-pulse">🌟 Excellent! 🌟</div>
+              <% } else if (result.totalScore >= 70) { %>
+                <div class="mt-4 text-green-300 text-xl font-bold">✨ Great Job! ✨</div>
+              <% } else if (result.totalScore >= 50) { %>
+                <div class="mt-4 text-blue-300 text-xl font-bold">👍 Good Effort!</div>
+              <% } else if (result.totalScore >= 30) { %>
+                <div class="mt-4 text-orange-300 text-xl font-bold">💪 Keep Trying!</div>
+              <% } else { %>
+                <div class="mt-4 text-red-300 text-xl font-bold">🎯 Practice Makes Perfect!</div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expandable Details Button -->
+      <div class="text-center mb-4">
+        <button
+          id="toggleDetails"
+          class="text-orange-400 hover:text-orange-300 transition-colors font-semibold text-sm uppercase tracking-wide flex items-center gap-2 mx-auto"
+          onclick="toggleDetails()"
+        >
+          <span id="toggleText">Show</span> Detailed Breakdown
+          <svg id="toggleIcon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Expandable Score Breakdown -->
+      <div id="detailsSection" class="expandable-content collapsed mb-4">
+        <!-- Guesses with Running Totals -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-300 mb-3">Your Guesses</h3>
+          <div class="bg-gray-900 rounded-lg p-4 font-mono text-2xl leading-relaxed">
+            <% result.guesses.forEach((guess, index) => { %>
+              <div class="mb-2 flex items-center justify-between hover:bg-gray-800/50 p-2 rounded transition-colors">
+                <span><%= guess %></span>
+                <span class="text-lg font-bold text-orange-500 ml-4"><%= runningTotals[index] %> pts</span>
+              </div>
             <% }); %>
           </div>
         </div>
-      </div>
 
-      <!-- Score Display -->
-      <div class="mb-6 text-center">
-        <div class="score-reveal score-glow score-gradient inline-block px-8 py-6 rounded-lg">
-          <div class="text-6xl font-bold text-white mb-2 number-count" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
-            <%= result.totalScore %>
-          </div>
-          <div class="text-xl text-orange-300 font-semibold">
-            <% if (result.totalScore >= 90) { %>
-              Outstanding! 🌟
-            <% } else if (result.totalScore >= 70) { %>
-              Great job! 🎉
-            <% } else if (result.totalScore >= 50) { %>
-              Good effort! 👍
-            <% } else if (result.totalScore >= 30) { %>
-              Keep trying! 💪
-            <% } else { %>
-              Better luck next time! 🍀
+        <!-- Score Breakdown -->
+        <div class="bg-gray-900 rounded-lg p-4">
+          <h3 class="text-lg font-semibold text-gray-300 mb-3">Score Breakdown</h3>
+          <div class="space-y-2 text-gray-300 font-mono text-lg">
+            <% 
+              let breakdownRawTotal = 0;
+              result.guesses.forEach((guess, index) => {
+                const boxScore = result.boxScores[index];
+                const penalty = result.guessPenalties[index];
+                // Net points for this guess: box score + penalty (both add to raw score)
+                const netPoints = boxScore + penalty;
+                breakdownRawTotal += netPoints;
+                // Transform for display: abs(100 - rawTotal) - higher is better
+                const transformedTotal = Math.abs(100 - breakdownRawTotal);
+            %>
+              <div class="flex items-center hover:bg-gray-800/30 p-2 rounded transition-colors">
+                <span class="mr-4"><%= guess %></span>
+                <span class="text-orange-400">-<%= netPoints %></span>
+                <span class="text-gray-400 mx-2">,</span>
+                <span class="text-orange-500 font-semibold"><%= transformedTotal %></span>
+              </div>
+            <% }); %>
+            <% if (result.failurePenalty > 0) { %>
+              <% breakdownRawTotal += result.failurePenalty; %>
+              <% const transformedTotal = Math.abs(100 - breakdownRawTotal); %>
+              <div class="flex items-center pt-2 border-t border-gray-700 hover:bg-gray-800/30 p-2 rounded transition-colors">
+                <span class="mr-4 text-red-400">Failed to complete</span>
+                <span class="text-red-400">-<%= result.failurePenalty %></span>
+                <span class="text-gray-400 mx-2">,</span>
+                <span class="text-red-500 font-semibold"><%= transformedTotal %></span>
+              </div>
             <% } %>
-          </div>
-        </div>
-      </div>
-
-      <!-- Detailed Breakdown (Expandable) -->
-      <div class="mb-6">
-        <div class="text-center mb-4">
-          <button
-            id="toggleBreakdown"
-            class="text-orange-400 hover:text-orange-300 transition-colors font-semibold text-sm uppercase tracking-wide flex items-center gap-2 mx-auto"
-            onclick="toggleBreakdown()"
-          >
-            <span id="toggleBreakdownText">Show</span> Detailed Breakdown
-            <svg id="toggleBreakdownIcon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </button>
-        </div>
-
-        <div id="breakdownContent" class="expandable-content collapsed">
-          <!-- Box Scores -->
-          <div class="bg-gray-900 rounded-lg p-4 mb-4">
-            <h3 class="text-lg font-semibold text-gray-300 mb-3">Box Scores</h3>
-            <div class="space-y-2 text-gray-300 font-mono text-lg">
-              <% result.guesses.forEach(function(guess, index) { %>
-                <div class="flex items-center justify-between hover:bg-gray-800/30 p-2 rounded transition-colors">
-                  <span><%= guess %></span>
-                  <span class="text-orange-400"><%= result.boxScores[index] %> pts</span>
-                </div>
-              <% }); %>
-              <div class="flex items-center justify-between pt-2 border-t border-gray-700 font-semibold">
-                <span>Total Box Score</span>
-                <span class="text-orange-500"><%= result.boxTotal %> pts</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Penalties -->
-          <div class="bg-gray-900 rounded-lg p-4 mb-4">
-            <h3 class="text-lg font-semibold text-gray-300 mb-3">Penalties</h3>
-            <div class="space-y-2 text-gray-300 font-mono text-lg">
-              <% result.guesses.forEach(function(guess, index) { %>
-                <div class="flex items-center justify-between hover:bg-gray-800/30 p-2 rounded transition-colors">
-                  <span>Guess <%= index + 1 %></span>
-                  <span class="text-red-400">Penalty: <%= result.guessPenalties[index] %> pts</span>
-                </div>
-              <% }); %>
-              <% if (result.failurePenalty > 0) { %>
-                <div class="flex items-center justify-between pt-2 border-t border-gray-700 hover:bg-gray-800/30 p-2 rounded transition-colors">
-                  <span class="text-red-400">Failed to complete</span>
-                  <span class="text-red-500 font-semibold">Penalty: <%= result.failurePenalty %> pts</span>
-                </div>
-              <% } %>
-              <div class="flex items-center justify-between pt-2 border-t border-gray-700 font-semibold">
-                <span>Total Penalty</span>
-                <span class="text-red-500"><%= result.totalPenalty %> pts</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Score Breakdown -->
-          <div class="bg-gray-900 rounded-lg p-4">
-            <h3 class="text-lg font-semibold text-gray-300 mb-3">Score Breakdown</h3>
-            <div class="space-y-2 text-gray-300 font-mono text-lg">
-              <% 
-                let breakdownRawTotal = 0;
-                result.guesses.forEach((guess, index) => {
-                  const boxScore = result.boxScores[index];
-                  const penalty = result.guessPenalties[index];
-                  // Net points for this guess: box score + penalty (both add to raw score)
-                  const netPoints = boxScore + penalty;
-                  breakdownRawTotal += netPoints;
-                  // Transform for display: abs(100 - rawTotal) - higher is better
-                  const transformedTotal = Math.abs(100 - breakdownRawTotal);
-              %>
-                <div class="flex items-center hover:bg-gray-800/30 p-2 rounded transition-colors">
-                  <span class="mr-4"><%= guess %></span>
-                  <span class="text-orange-400">-<%= netPoints %></span>
-                  <span class="text-gray-400 mx-2">,</span>
-                  <span class="text-orange-500 font-semibold"><%= transformedTotal %></span>
-                </div>
-              <% }); %>
-              <% if (result.failurePenalty > 0) { %>
-                <% breakdownRawTotal += result.failurePenalty; %>
-                <% const transformedTotal = Math.abs(100 - breakdownRawTotal); %>
-                <div class="flex items-center pt-2 border-t border-gray-700 hover:bg-gray-800/30 p-2 rounded transition-colors">
-                  <span class="mr-4 text-red-400">Failed to complete</span>
-                  <span class="text-red-400">-<%= result.failurePenalty %></span>
-                  <span class="text-gray-400 mx-2">,</span>
-                  <span class="text-red-500 font-semibold"><%= transformedTotal %></span>
-                </div>
-              <% } %>
-            </div>
           </div>
         </div>
       </div>
@@ -208,142 +195,151 @@
 
     <!-- Expandable Scoring System Content -->
     <div id="scoringSystemContent" class="expandable-content collapsed">
-      <div class="bg-gray-800 rounded-lg shadow-lg p-6">
-        <h2 class="text-2xl font-bold text-orange-500 mb-4">How Scoring Works</h2>
-        
-        <div class="space-y-4 text-gray-300">
-          <div>
-            <h3 class="text-lg font-semibold text-orange-400 mb-2">Box Points (Golf-style: Lower is Better)</h3>
-            <ul class="list-disc list-inside space-y-1 ml-4">
-              <li><span class="text-2xl">⬛</span> Black box: <strong>2 points</strong> (letter not in word)</li>
-              <li><span class="text-2xl">🟨</span> Yellow box: <strong>1 point</strong> (letter in word, wrong position)</li>
-              <li><span class="text-2xl">🟩</span> Green box: <strong>0 points</strong> (letter in word, correct position)</li>
-            </ul>
-            <p class="mt-2 text-sm text-gray-400">Note: Gray/white squares (⬜), black circles (⚫), and brown squares (🟫) are automatically normalized to black boxes.</p>
-          </div>
-
-          <div>
-            <h3 class="text-lg font-semibold text-orange-400 mb-2">Penalties</h3>
-            <ul class="list-disc list-inside space-y-1 ml-4">
-              <li><strong>Per-guess penalty:</strong> (guessNumber - 1) × 2
-                <ul class="list-circle list-inside ml-6 mt-1 space-y-1 text-sm">
-                  <li>Guess 1: 0 penalty</li>
-                  <li>Guess 2: 2 penalty</li>
-                  <li>Guess 3: 4 penalty</li>
-                  <li>Guess 4: 6 penalty</li>
-                  <li>Guess 5: 8 penalty</li>
-                  <li>Guess 6: 10 penalty</li>
-                </ul>
-              </li>
-              <li><strong>Failure penalty:</strong> 10 points if Wordle is not completed</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 class="text-lg font-semibold text-orange-400 mb-2">Final Score Calculation</h3>
-            <div class="bg-gray-900 rounded-lg p-4 font-mono text-sm">
-              <p class="mb-2">rawScore = boxTotal + totalPenalty</p>
-              <p>finalScore = |100 - rawScore|</p>
-            </div>
-            <p class="mt-2 text-sm text-gray-400">
-              The final score is transformed so that <strong>higher is better</strong>:
-              <ul class="list-disc list-inside ml-4 mt-1 space-y-1">
-                <li><strong>Perfect score:</strong> 100 points (all green boxes on first guess)</li>
-                <li><strong>Failure score:</strong> 0 points (did not complete the wordle)</li>
-              </ul>
-            </p>
-          </div>
-        </div>
+      <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+        <h2 class="text-xl font-bold text-orange-500 mb-4">Scoring System (Higher is Better)</h2>
+        <div class="grid md:grid-cols-2 gap-4 text-gray-300">
+      <div>
+        <h3 class="font-semibold text-gray-200 mb-2">Box Points (add to score):</h3>
+        <ul class="space-y-1 text-sm">
+          <li>⬛ Black box: <span class="text-red-400 font-semibold">-2 points</span> (bad)</li>
+          <li>🟨 Yellow box: <span class="text-yellow-400 font-semibold">-1 point</span> (ok)</li>
+          <li>🟩 Green box: <span class="text-green-400 font-semibold">+0 points</span> (good)</li>
+        </ul>
+        <p class="text-xs text-gray-400 mt-2">Perfect score = 100 (all green on first guess)</p>
+        <p class="text-xs text-gray-400 mt-1">Final score = |100 - raw score| (failure = 0)</p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-gray-200 mb-2">Per-Guess Penalty (adds to score):</h3>
+        <ul class="space-y-1 text-sm">
+          <li>Guess 1: <span class="text-green-400 font-semibold">0 penalty</span></li>
+          <li>Guess 2: <span class="text-orange-400 font-semibold">-2 penalty</span></li>
+          <li>Guess 3: <span class="text-orange-400 font-semibold">-4 penalty</span></li>
+          <li>Guess 4: <span class="text-orange-400 font-semibold">-6 penalty</span></li>
+          <li>Guess 4: <span class="text-orange-400 font-semibold">-8 penalty</span></li>
+          <li>Guess 4: <span class="text-orange-400 font-semibold">-10 penalty</span></li>
+        </ul>
+        <p class="text-xs text-gray-400 mt-2">Penalties add to your score (making it worse)</p>
+        <p class="text-xs text-red-400 mt-1 font-semibold">Failure penalty: +10 points if not completed</p>
+      </div>
+    </div>
       </div>
     </div>
   </div>
 
-  <!-- Score a New Wordle Button -->
-  <% if (typeof result !== 'undefined' && result) { %>
-    <div class="text-center mb-6">
-      <button
-        id="scoreNewButton"
-        onclick="scoreNewWordle()"
-        class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-      >
-        Score a New Wordle
-      </button>
-    </div>
-  <% } %>
+  <!-- New Score Button -->
+  <div id="newScoreButtonSection" class="mb-6" style="display: none;">
+    <button
+      id="newScoreButton"
+      class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+      onclick="showNewScoreForm()"
+    >
+      Score a New Wordle
+    </button>
+  </div>
 </div>
 
 <script>
-  function toggleBreakdown() {
-    const content = document.getElementById('breakdownContent');
-    const text = document.getElementById('toggleBreakdownText');
-    const icon = document.getElementById('toggleBreakdownIcon');
+  // Toggle details section
+  function toggleDetails() {
+    const detailsSection = document.getElementById('detailsSection');
+    const toggleText = document.getElementById('toggleText');
+    const toggleIcon = document.getElementById('toggleIcon');
     
-    if (content.classList.contains('collapsed')) {
-      content.classList.remove('collapsed');
-      text.textContent = 'Hide';
-      icon.style.transform = 'rotate(180deg)';
+    if (detailsSection.classList.contains('collapsed')) {
+      detailsSection.classList.remove('collapsed');
+      detailsSection.classList.add('expanded');
+      toggleText.textContent = 'Hide';
+      toggleIcon.style.transform = 'rotate(180deg)';
     } else {
-      content.classList.add('collapsed');
-      text.textContent = 'Show';
-      icon.style.transform = 'rotate(0deg)';
+      detailsSection.classList.remove('expanded');
+      detailsSection.classList.add('collapsed');
+      toggleText.textContent = 'Show';
+      toggleIcon.style.transform = 'rotate(0deg)';
     }
   }
 
+  // Toggle scoring system section
   function toggleScoringSystem() {
-    const section = document.getElementById('scoringSystemSection');
-    const content = document.getElementById('scoringSystemContent');
-    const text = document.getElementById('toggleScoringText');
-    const icon = document.getElementById('toggleScoringIcon');
+    const scoringSystemContent = document.getElementById('scoringSystemContent');
+    const toggleScoringText = document.getElementById('toggleScoringText');
+    const toggleScoringIcon = document.getElementById('toggleScoringIcon');
     
-    if (section.style.display === 'none') {
-      section.style.display = 'block';
-      content.classList.remove('collapsed');
-      text.textContent = 'Hide';
-      icon.style.transform = 'rotate(180deg)';
-    } else if (content.classList.contains('collapsed')) {
-      content.classList.remove('collapsed');
-      text.textContent = 'Hide';
-      icon.style.transform = 'rotate(180deg)';
+    if (scoringSystemContent.classList.contains('collapsed')) {
+      scoringSystemContent.classList.remove('collapsed');
+      scoringSystemContent.classList.add('expanded');
+      toggleScoringText.textContent = 'Hide';
+      toggleScoringIcon.style.transform = 'rotate(180deg)';
     } else {
-      content.classList.add('collapsed');
-      text.textContent = 'Show';
-      icon.style.transform = 'rotate(0deg)';
+      scoringSystemContent.classList.remove('expanded');
+      scoringSystemContent.classList.add('collapsed');
+      toggleScoringText.textContent = 'Show';
+      toggleScoringIcon.style.transform = 'rotate(0deg)';
     }
   }
 
-  function scoreNewWordle() {
-    // Hide results section
+  // Show new score form and hide results
+  function showNewScoreForm() {
+    const inputFormSection = document.getElementById('inputFormSection');
     const resultsSection = document.getElementById('resultsSection');
     const scoringSystemSection = document.getElementById('scoringSystemSection');
-    const scoreNewButton = document.getElementById('scoreNewButton');
-    const inputFormSection = document.getElementById('inputFormSection');
-    
-    if (resultsSection) resultsSection.style.display = 'none';
-    if (scoringSystemSection) scoringSystemSection.style.display = 'none';
-    if (scoreNewButton) scoreNewButton.style.display = 'none';
-    if (inputFormSection) inputFormSection.style.display = 'block';
-    
-    // Clear textarea
+    const newScoreButtonSection = document.getElementById('newScoreButtonSection');
     const wordleTextarea = document.getElementById('wordleText');
-    if (wordleTextarea) {
-      wordleTextarea.value = '';
-      wordleTextarea.focus();
+    
+    // Show the input form
+    if (inputFormSection) {
+      inputFormSection.style.display = 'block';
     }
     
-    // Scroll to top
+    // Hide the results section
+    if (resultsSection) {
+      resultsSection.style.display = 'none';
+    }
+    
+    // Hide the scoring system section
+    if (scoringSystemSection) {
+      scoringSystemSection.style.display = 'none';
+    }
+    
+    // Hide the new score button
+    if (newScoreButtonSection) {
+      newScoreButtonSection.style.display = 'none';
+    }
+    
+    // Clear the textarea
+    if (wordleTextarea) {
+      wordleTextarea.value = '';
+    }
+    
+    // Scroll to top smoothly
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Focus on the textarea
+    if (wordleTextarea) {
+      setTimeout(() => wordleTextarea.focus(), 300);
+    }
   }
 
+  // Generate sample Wordle result
   document.addEventListener('DOMContentLoaded', function() {
-    // Hide input form if results are shown
+    // Hide input form and show scoring system/new score button if results are shown
     <% if (typeof result !== 'undefined' && result) { %>
       const inputFormSection = document.getElementById('inputFormSection');
+      const scoringSystemSection = document.getElementById('scoringSystemSection');
+      const newScoreButtonSection = document.getElementById('newScoreButtonSection');
+      
       if (inputFormSection) {
         inputFormSection.style.display = 'none';
       }
+      
+      if (scoringSystemSection) {
+        scoringSystemSection.style.display = 'block';
+      }
+      
+      if (newScoreButtonSection) {
+        newScoreButtonSection.style.display = 'block';
+      }
     <% } %>
-
-    // Generate sample button
+    
     const generateButton = document.getElementById('generateSampleButton');
     const wordleTextarea = document.getElementById('wordleText');
     
@@ -411,33 +407,22 @@
       
       if (copyButton) {
         copyButton.addEventListener('click', function() {
-          // Build the formatted text with optional header line
-          // Use JSON.stringify to safely escape the string for JavaScript context
-          <%
-            const parts = [];
-            
-            // Add header line if present
-            if (result.headerLine) {
-              parts.push(result.headerLine);
-              parts.push(''); // Empty line after header
+          // Format: guess count + original boxes + newline + "Score: X points"
+          <% 
+            let guessText;
+            if (result.attempts === 6) {
+              const lastGuess = result.guesses[result.guesses.length - 1];
+              const isCompleted = lastGuess === '🟩🟩🟩🟩🟩';
+              if (isCompleted) {
+                guessText = '6/6 guesses';
+              } else {
+                guessText = 'X/6 guesses'; // Literal X when failed
+              }
+            } else {
+              guessText = `${result.attempts}/6 guesses`;
             }
-            
-            // Add box lines
-            parts.push(result.guesses.join('\n'));
-            
-            // Add empty line before score
-            parts.push('');
-            
-            // Add score line
-            parts.push(`Score: ${result.totalScore} points`);
-            
-            const formattedText = parts.join('\n');
-            // Properly escape for JavaScript string context using JSON.stringify
-            // This prevents injection via backticks, quotes, or other special characters
-            const escapedText = JSON.stringify(formattedText);
           %>
-          // Use JSON.stringify output directly (it's already a valid JavaScript string literal)
-          const formattedText = <%= escapedText %>;
+          const formattedText = `<%= guessText %>\n<%= result.guesses.join('\\n') %>\nScore: <%= result.totalScore %> points`;
           
           navigator.clipboard.writeText(formattedText).then(function() {
             copySuccess.style.display = 'block';
