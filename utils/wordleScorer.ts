@@ -8,6 +8,7 @@ export interface ScoreResult {
   failurePenalty: number;
   totalScore: number;
   originalText: string;
+  headerLine?: string; // First line if it starts with "Wordle"
 }
 
 /**
@@ -60,6 +61,20 @@ function normalizeBoxChar(char: string): string | null {
     return '🟩';
   }
   return null;
+}
+
+/**
+ * Extracts the header line if it starts with "Wordle".
+ * @param shareText - The Wordle share text
+ * @returns The first line if it starts with "Wordle", otherwise undefined
+ */
+function extractHeaderLine(shareText: string): string | undefined {
+  const lines = shareText.split('\n');
+  const firstLine = lines[0]?.trim();
+  if (firstLine && firstLine.toLowerCase().startsWith('wordle')) {
+    return firstLine;
+  }
+  return undefined;
 }
 
 /**
@@ -169,6 +184,9 @@ function transformScore(rawScore: number): number {
  * @throws Error if input format is invalid
  */
 export function scoreWordle(shareText: string): ScoreResult {
+  // Extract header line if present
+  const headerLine = extractHeaderLine(shareText);
+  
   // Extract and validate boxes
   const allBoxes = extractBoxes(shareText);
   validateBoxCount(allBoxes.length);
@@ -217,6 +235,7 @@ export function scoreWordle(shareText: string): ScoreResult {
     failurePenalty,
     totalScore,
     originalText: shareText,
+    headerLine,
   };
 }
 

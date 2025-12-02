@@ -39,6 +39,22 @@ describe('scoreWordle', () => {
       expect(result.guesses.length).toBe(3);
     });
 
+    it('should extract header line when input starts with "Wordle"', () => {
+      const input = 'Wordle 1,000 6/6\n\n🟨⬛⬛⬛⬛\n🟨⬛🟩🟨⬛\n🟩⬛⬛⬛🟩\n🟨🟩🟩🟩🟩\n🟩🟩🟨🟩🟨\n🟩🟩🟩🟩🟩';
+      const result = scoreWordle(input);
+      
+      expect(result.headerLine).toBe('Wordle 1,000 6/6');
+      expect(result.attempts).toBe(6);
+    });
+
+    it('should not extract header line when input does not start with "Wordle"', () => {
+      const input = '⬛🟨🟩⬛🟨\n🟨🟩🟨🟩🟩\n🟩🟩🟩🟩🟩';
+      const result = scoreWordle(input);
+      
+      expect(result.headerLine).toBeUndefined();
+      expect(result.attempts).toBe(3);
+    });
+
     it('should normalize gray/white squares to black squares', () => {
       const input = '⬜⬜⬜⬜⬜\n🟩🟩🟩🟩🟩';
       const result = scoreWordle(input);

@@ -407,22 +407,28 @@
       
       if (copyButton) {
         copyButton.addEventListener('click', function() {
-          // Format: guess count + original boxes + newline + "Score: X points"
-          <% 
-            let guessText;
-            if (result.attempts === 6) {
-              const lastGuess = result.guesses[result.guesses.length - 1];
-              const isCompleted = lastGuess === '🟩🟩🟩🟩🟩';
-              if (isCompleted) {
-                guessText = '6/6 guesses';
-              } else {
-                guessText = 'X/6 guesses'; // Literal X when failed
-              }
-            } else {
-              guessText = `${result.attempts}/6 guesses`;
+          // Build the formatted text with optional header line
+          <%
+            const parts = [];
+            
+            // Add header line if present
+            if (result.headerLine) {
+              parts.push(result.headerLine);
+              parts.push(''); // Empty line after header
             }
+            
+            // Add box lines
+            parts.push(result.guesses.join('\n'));
+            
+            // Add empty line before score
+            parts.push('');
+            
+            // Add score line
+            parts.push(`Score: ${result.totalScore} points`);
+            
+            const formattedText = parts.join('\n');
           %>
-          const formattedText = `<%= guessText %>\n<%= result.guesses.join('\\n') %>\nScore: <%= result.totalScore %> points`;
+          const formattedText = `<%= formattedText %>`;
           
           navigator.clipboard.writeText(formattedText).then(function() {
             copySuccess.style.display = 'block';

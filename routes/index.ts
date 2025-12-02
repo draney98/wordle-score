@@ -12,6 +12,14 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 /**
+ * GET /score - Redirect to homepage
+ * If user navigates directly to /score, redirect to / since there's no data to score.
+ */
+router.get('/score', (req: Request, res: Response) => {
+  res.redirect('/');
+});
+
+/**
  * POST /score - Process Wordle text and calculate score
  * Accepts Wordle share text, calculates the score, and renders results.
  * 
