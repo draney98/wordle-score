@@ -427,8 +427,12 @@
             parts.push(`Score: ${result.totalScore} points`);
             
             const formattedText = parts.join('\n');
+            // Properly escape for JavaScript string context using JSON.stringify
+          // Use JSON.stringify output directly (it's already a valid JavaScript string literal)
+          const formattedText = <%= escapedText %>;
+            const escapedText = JSON.stringify(formattedText);
           %>
-          const formattedText = `<%= formattedText %>`;
+          const formattedText = <%= JSON.stringify(formattedText) %>;
           
           navigator.clipboard.writeText(formattedText).then(function() {
             copySuccess.style.display = 'block';
