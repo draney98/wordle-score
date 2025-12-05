@@ -4,5 +4,4 @@ dist/
 *.log
 .DS_Store
 public/css/output.css
-.cleanliness-prompts.txt
 
